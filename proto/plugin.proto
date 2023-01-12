@@ -1,0 +1,15 @@
+syntax = "proto3";
+package proto;
+option go_package = "github.com/MrWong99/adventofcode/proto";
+
+message CalcRequest {
+    string input = 1;
+}
+
+message ResultResponse {
+    string value = 1;
+}
+
+service Calculate {
+    rpc Calculate(CalcRequest) returns (ResultResponse);
+}
