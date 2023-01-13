@@ -12,12 +12,12 @@ import (
 )
 
 type Manager struct {
-	calculators map[string]*Calculator
+	calculators map[string]*CalculatorPlugin
 }
 
-func NewManager() *Manager {
+func New() *Manager {
 	return &Manager{
-		calculators: make(map[string]*Calculator, 0),
+		calculators: make(map[string]*CalculatorPlugin, 0),
 	}
 }
 
@@ -29,7 +29,7 @@ func (m *Manager) Calculate(calculatorName, input string) (string, error) {
 	}
 }
 
-func (m *Manager) RegisterCalculator(calc *Calculator) error {
+func (m *Manager) RegisterCalculator(calc *CalculatorPlugin) error {
 	if calc.Name == "" {
 		return errors.New("a calculator must have a non-empty name")
 	}
@@ -80,24 +80,24 @@ func (m *Manager) Close() {
 	for _, c := range m.calculators {
 		c.Close()
 	}
-	m.calculators = make(map[string]*Calculator, 0)
+	m.calculators = make(map[string]*CalculatorPlugin, 0)
 }
 
-type Calculator struct {
+type CalculatorPlugin struct {
 	Name    string
 	Cmd     string
 	client  *plugin.Client
 	service shared.CalcService
 }
 
-func (c *Calculator) Calculate(input string) (string, error) {
+func (c *CalculatorPlugin) Calculate(input string) (string, error) {
 	if c.service == nil {
 		return "", fmt.Errorf("calculator %q is not yet started and needs to be registered", c.Name)
 	}
 	return c.service.Calculate(input)
 }
 
-func (c *Calculator) Close() {
+func (c *CalculatorPlugin) Close() {
 	if c.client != nil {
 		c.client.Kill()
 		c.client = nil
