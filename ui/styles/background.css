@@ -1,8 +1,11 @@
 body {
     background-color: var(--col-black-bg);
-    margin: 20%;
-    margin-top: 0;
-    margin-bottom: 0;
+    margin: 0;
+}
+
+.bg-div {
+    padding-left: 20%;
+    padding-right: 20%;
 }
 
 .main-div {
