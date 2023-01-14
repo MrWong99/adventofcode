@@ -1,0 +1,12 @@
+body {
+    background-color: var(--col-black-bg);
+    margin: 20%;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.main-div {
+    display: grid;
+    background-color: var(--col-withe-bg);
+    height: 100vh;
+}

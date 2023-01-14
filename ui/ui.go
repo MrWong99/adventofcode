@@ -2,6 +2,7 @@ package ui
 
 import (
 	"embed"
+	"fmt"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -16,10 +17,12 @@ var htmlDir embed.FS
 
 var files map[string][]byte
 
+var templates map[string]*template.Template
+
 func init() {
 	files = make(map[string][]byte)
+	templates = make(map[string]*template.Template)
 	readDir(".")
-	log.Log.Debug("Htmls", "htmlDir", htmlDir)
 	log.Log.Debug("Initialized embedded fs", "filecount", len(files))
 }
 
@@ -39,10 +42,20 @@ func readDir(dir string) {
 			readDir(dir + entry.Name())
 		} else {
 			path := dir + entry.Name()
+			if path == "sitelayout.html" {
+				continue
+			}
 			content, err := htmlDir.ReadFile(path)
 			if err != nil {
 				log.Log.Warn("Could not read fs file", "path", path, "error", err)
 			} else {
+				if filepath.Ext(path) == ".gohtml" {
+					tpl, err := template.New("sitelayout.gohtml").ParseFS(htmlDir, "sitelayout.gohtml", path)
+					if err == nil {
+						templates[strings.ReplaceAll(path, ".gohtml", ".html")] = tpl
+						continue
+					}
+				}
 				files[path] = content
 			}
 		}
@@ -58,52 +71,69 @@ func Instance() *Ui {
 }
 
 func (*Ui) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var input url.Values
-	if r.Body != nil && r.Method == "POST" {
-		r.ParseForm()
-		input = r.Form
-		log.Log.Info("User input form data on site", "url", r.URL, "input", input)
-	} else {
-		input = make(url.Values)
+	input := make(url.Values)
+	if r.Body != nil {
+		if r.Method == "POST" {
+			r.ParseForm()
+			input = r.Form
+			log.Log.Debug("User input form data on site", "url", r.URL, "input", input)
+		}
+		r.Body.Close()
 	}
+
 	toServe := r.URL.EscapedPath()[1:]
 	if toServe == "" {
 		toServe = "index.html"
 	}
-	file, ok := files[toServe]
-	if !ok {
-		log.Log.Debug("Unknown file requested", "url", toServe)
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
 	switch filepath.Ext(toServe) {
 	case ".html":
 		w.Header().Set("Content-Type", "text/html")
-		templateParsed := serveAsTemplate(toServe, w, input, r)
-		if templateParsed {
-			return
-		}
 	case ".css":
 		w.Header().Set("Content-Type", "text/css")
 	case ".ico":
 		w.Header().Set("Content-Type", "image/x-icon")
 	default:
-		w.WriteHeader(http.StatusForbidden)
+		serveErrorPage(&ErrorDisplay{Error: fmt.Errorf("file not found %s", toServe), StatusCode: http.StatusNotFound}, w)
+		return
+	}
+	tpl, ok := templates[toServe]
+	if ok {
+		err := serveAsTemplate(tpl, w, input)
+		if err == nil {
+			return
+		}
+		serveErrorPage(&ErrorDisplay{Error: err, StatusCode: http.StatusInternalServerError}, w)
+		return
+	}
+	file, ok := files[toServe]
+	if !ok {
+		log.Log.Debug("Unknown file requested", "url", toServe)
+		serveErrorPage(&ErrorDisplay{Error: fmt.Errorf("file not found %s", toServe), StatusCode: http.StatusNotFound}, w)
 		return
 	}
 	w.Write(file)
 }
 
-func serveAsTemplate(toServe string, w http.ResponseWriter, input url.Values, r *http.Request) bool {
-	tpl, err := template.New("sitelayout.html").ParseFS(htmlDir, "sitelayout.html", toServe)
+func serveAsTemplate(tpl *template.Template, w http.ResponseWriter, input url.Values) error {
+	err := tpl.Execute(w, input)
 	if err == nil {
-		err = tpl.Execute(w, input)
-		if err == nil {
-			return true
-		}
-		log.Log.Warn("Could not parse template file. Serving raw instead", "url", r.URL, "toServe", toServe, "error", err)
-	} else {
-		log.Log.Warn("Could not create template file. Serving raw instead", "url", r.URL, "toServe", toServe, "error", err)
+		return nil
 	}
-	return false
+	log.Log.Warn("Could not parse template file", "error", err)
+	return err
+}
+
+type ErrorDisplay struct {
+	Error      error
+	StatusCode int
+}
+
+func serveErrorPage(input *ErrorDisplay, w http.ResponseWriter) {
+	w.WriteHeader(input.StatusCode)
+	tpl := templates["error.html"]
+	err := tpl.Execute(w, input)
+	if err == nil {
+		return
+	}
+	log.Log.Error("Could not serve error page", "input", input, "error", err)
 }

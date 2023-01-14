@@ -1,0 +1,11 @@
+:root {
+    --col-withe-bg: rgba(240, 248, 255, 0.612);
+    --col-black-bg: rgba(0, 0, 0, 0.781);
+
+    --col-red-100: rgb(105, 6, 26);
+    --col-red-80: rgb(138, 6, 33);
+
+    --col-green-100: rgb(2, 27, 5);
+    --col-green-90: rgb(8, 62, 14);
+    --col-green-80: rgb(14, 96, 23);
+}
