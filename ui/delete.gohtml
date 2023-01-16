@@ -1,0 +1,9 @@
+{{ define "content" }}
+{{ with DeletePlugin (index .id 0) }}
+<h1>There was an issue while deleting the plugin:</h1>
+<h2>{{ . }}</h2>
+{{ else }}
+<h1>Successfully deleted plugin :)</h1>
+{{ end }}
+{{ block "homebutton" . }}{{ end }}
+{{ end }}

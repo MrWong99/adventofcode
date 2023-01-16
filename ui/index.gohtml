@@ -1,3 +1,61 @@
 {{ define "content" }}
+<div>
     <h1>Welcome to the Advent of Code overengineered version!</h1>
+    <section>
+        <h2>Currently registered plugins:</h2>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Command</th>
+                <th>Delete</th>
+            </tr>
+            {{ with AllPlugins -}}
+            {{ range . -}}
+            <tr>
+                <td>{{ .Name }}</td>
+                <td>{{ .Cmd }}</td>
+                <td>
+                    <form action="/delete.html" method="post" target="_self">
+                        <input type="hidden" name="id" value="{{ .ID }}">
+                        <input type="submit" id="delete-{{ .ID }}" value="X" class="delete-button">
+                    </form>
+                </td>
+            </tr>
+            {{- end }}
+            {{- end }}
+        </table>
+    </section>
+    <section>
+        <h2>Add new plugin</h2>
+        <form action="/register.html" method="post" target="_self" autocomplete="off" class="grid">
+            <label for="name">Name:</label>
+            <label for="cmd" style="grid-column-start: 2; grid-column-end: 4;">Command to execute:</label>
+            <input type="text" id="name" name="name" required>
+            <input type="text" id="cmd" name="cmd" style="grid-column-start: 2; grid-column-end: 4;" required>
+            <div style="grid-column-start: 1; grid-column-end: 4; height: 1em;"></div>
+            <input type="submit" id="add-plugin" value="ADD" class="add-button" style="grid-column-start: 1; grid-column-end: 3;">
+            <input type="reset" value="Clear">
+        </form>
+    </section>
+    <section>
+        <h2>Calculate result with plugin</h2>
+        <form action="/calculate.html" method="post" target="_self" autocomplete="off" class="grid">
+            <label for="plugin" style="grid-column-start: 1; grid-column-end: 4;">Plugin:</label>
+            <select name="plugin" id="plugin" style="grid-column-start: 1; grid-column-end: 3;">
+            {{ with AllPlugins -}}
+                {{ range . -}}
+                <option value="{{ .ID }}">{{ .Name }}</option>
+                {{- end }}
+            {{ else }}
+                <option value="none-available" style="color: red;">No plugin registered!</option>
+            {{- end }}
+            </select>
+            <label for="input" style="grid-column-start: 1; grid-column-end: 4;">Input:</label>
+            <textarea id="input" name="input" rows="10" cols="100" style="grid-column-start: 1; grid-column-end: 4;"></textarea>
+            <div style="grid-column-start: 1; grid-column-end: 4; height: 1em;"></div>
+            <input type="submit" id="calculate" value="CALCULATE" class="add-button" style="grid-column-start: 1; grid-column-end: 3;">
+            <input type="reset" value="Clear">
+        </form>
+    </section>
+</div>
 {{ end }}

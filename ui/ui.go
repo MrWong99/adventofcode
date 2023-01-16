@@ -9,7 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/MrWong99/adventofcode/db"
 	"github.com/MrWong99/adventofcode/log"
+	"github.com/MrWong99/adventofcode/templatefunc"
 )
 
 //go:embed *
@@ -23,7 +25,7 @@ func init() {
 	files = make(map[string][]byte)
 	templates = make(map[string]*template.Template)
 	readDir(".")
-	log.Log.Debug("Initialized embedded fs", "filecount", len(files))
+	log.Log.Debug("Initialized embedded fs", "filecount", len(files), "templatecount", len(templates))
 }
 
 func readDir(dir string) {
@@ -50,16 +52,28 @@ func readDir(dir string) {
 				log.Log.Warn("Could not read fs file", "path", path, "error", err)
 			} else {
 				if filepath.Ext(path) == ".gohtml" {
-					tpl, err := template.New("sitelayout.gohtml").ParseFS(htmlDir, "sitelayout.gohtml", path)
+					tpl, err := siteTpl().ParseFS(htmlDir, "sitelayout.gohtml", path)
 					if err == nil {
 						templates[strings.ReplaceAll(path, ".gohtml", ".html")] = tpl
 						continue
+					} else {
+						log.Log.Debug("Error while loading template", "path", path, "error", err)
 					}
 				}
 				files[path] = content
 			}
 		}
 	}
+}
+
+func siteTpl() (tpl *template.Template) {
+	tpl = template.New("sitelayout.gohtml").Funcs(template.FuncMap{
+		"AllPlugins":   db.AllPlugins,
+		"AddPlugin":    templatefunc.AddPlugin,
+		"DeletePlugin": templatefunc.DeletePlugin,
+		"Calculate":    templatefunc.Calculate,
+	})
+	return
 }
 
 var ui = &Ui{}
@@ -98,6 +112,7 @@ func (*Ui) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	tpl, ok := templates[toServe]
 	if ok {
+		w.Header().Add("Cache-Control", "no-store")
 		err := serveAsTemplate(tpl, w, input)
 		if err == nil {
 			return
@@ -129,6 +144,7 @@ type ErrorDisplay struct {
 }
 
 func serveErrorPage(input *ErrorDisplay, w http.ResponseWriter) {
+	w.Header().Add("Cache-Control", "no-store")
 	w.WriteHeader(input.StatusCode)
 	tpl := templates["error.html"]
 	err := tpl.Execute(w, input)

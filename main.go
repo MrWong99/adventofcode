@@ -29,8 +29,7 @@ func main() {
 
 func runWithExit() int {
 	flag.Parse()
-	manager := pluginmanager.New()
-	defer manager.Close()
+	defer pluginmanager.Close()
 
 	if *CalcsToLoad == "" {
 		log.Log.Info("No calculation-plugins provided")
@@ -41,7 +40,7 @@ func runWithExit() int {
 				log.Log.Warn("The calculator-plugin is not valid", "plugin", calc)
 				continue
 			}
-			if err := loadPlugin(manager, parts[0], parts[1]); err != nil {
+			if err := loadPlugin(parts[0], parts[1]); err != nil {
 				log.Log.Warn("Could not load plugin", "name", parts[0], "cmd", parts[1], "error", err)
 			}
 		}
@@ -69,7 +68,7 @@ func runWithExit() int {
 			log.Log.Info("Successfully loaded input file", "-input-file", *InputFile)
 			log.Log.Debug("Input file content", "-input-file", *InputFile, "content", input)
 		}
-		result, err := manager.Calculate(*CalcToUse, input)
+		result, err := pluginmanager.Calculate(*CalcToUse, input)
 		if err == nil {
 			log.Log.Info("Calculation successful", "result", result)
 		} else {
@@ -80,6 +79,6 @@ func runWithExit() int {
 	return 0
 }
 
-func loadPlugin(manager *pluginmanager.Manager, name, cmd string) error {
-	return manager.RegisterCalculator(&pluginmanager.CalculatorPlugin{Name: name, Cmd: cmd})
+func loadPlugin(name, cmd string) error {
+	return pluginmanager.RegisterCalculator(&pluginmanager.CalculatorPlugin{Name: name, Cmd: cmd})
 }

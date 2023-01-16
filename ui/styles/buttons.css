@@ -1,0 +1,28 @@
+.delete-button {
+    border: none;
+    color: var(--col-red-100);
+    background: none;
+    font-weight: 900;
+}
+
+.add-button {
+    border-radius: 3px;
+    border-color: var(--col-green-90);
+    box-shadow: -1px -1px 1px 1px var(--col-green-90) inset;
+    background-color: var(--col-green-80);
+    color: blanchedalmond;
+    font-weight: 800;
+}
+
+.home-button {
+    margin-top: 1em;
+    border-radius: 3px;
+    border-color: var(--col-green-90);
+    box-shadow: -1px -1px 1px 1px var(--col-green-90) inset;
+    background-color: var(--col-green-80);
+    color: blanchedalmond;
+    font-weight: 800;
+    padding: 1em;
+    text-align: center;
+    text-decoration: none;
+}

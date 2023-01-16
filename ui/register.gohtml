@@ -1,0 +1,9 @@
+{{ define "content" }}
+{{ with AddPlugin (index .name 0) (index .cmd 0) }}
+<h1>There was an issue while adding the plugin:</h1>
+<h2>{{ . }}</h2>
+{{ else }}
+<h1>Successfully added plugin {{ index .name 0 }} :)</h1>
+{{ end }}
+{{ block "homebutton" . }}{{ end }}
+{{ end }}

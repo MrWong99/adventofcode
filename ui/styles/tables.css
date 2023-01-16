@@ -1,0 +1,35 @@
+th {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: larger;
+    background-color: var(--col-green-80);
+    padding: 0.4em;
+}
+
+td {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 0.2em;
+    box-shadow: 0 0 1px 1px var(--col-red-100);
+}
+
+td > form {
+    display: grid;
+}
+
+td > form > input {
+    justify-items: center;
+}
+
+tr {
+    box-shadow: 1px 2px 5px 1px black;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    column-gap: 2em;
+    row-gap: 0.1em;
+}
+
+label {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}

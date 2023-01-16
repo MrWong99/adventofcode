@@ -1,0 +1,5 @@
+{{ define "content" }}
+<h1>Calculated result is:</h1>
+<h2>{{ Calculate (index .plugin 0) (index .input 0) }}</h2>
+{{ block "homebutton" . }}{{ end }}
+{{ end }}

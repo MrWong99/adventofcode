@@ -15,3 +15,16 @@ h1 {
     animation-direction: alternate;
     animation-iteration-count: infinite;
 }
+
+h2 {
+    text-align: left;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 500;
+}
+
+section {
+    box-shadow: 1px 1px 2px 2px #326c9f;
+    background-color: #2e7e9d;
+    margin: 2em;
+    padding: 0em 1em 1em 1em;
+}

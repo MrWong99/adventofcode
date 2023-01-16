@@ -11,25 +11,21 @@ import (
 	"github.com/hashicorp/go-plugin"
 )
 
-type Manager struct {
-	calculators map[string]*CalculatorPlugin
-}
+var calculators = make(map[string]*CalculatorPlugin, 0)
 
-func New() *Manager {
-	return &Manager{
-		calculators: make(map[string]*CalculatorPlugin, 0),
-	}
-}
-
-func (m *Manager) Calculate(calculatorName, input string) (string, error) {
-	if calc, ok := m.calculators[calculatorName]; ok {
+func Calculate(calculatorName, input string) (string, error) {
+	if calc, ok := calculators[calculatorName]; ok {
 		return calc.service.Calculate(input)
 	} else {
 		return "", fmt.Errorf("calculator with name %q is not registered", calculatorName)
 	}
 }
 
-func (m *Manager) RegisterCalculator(calc *CalculatorPlugin) error {
+func DeleteCalculator(name string) {
+	delete(calculators, name)
+}
+
+func RegisterCalculator(calc *CalculatorPlugin) error {
 	if calc.Name == "" {
 		return errors.New("a calculator must have a non-empty name")
 	}
@@ -69,18 +65,18 @@ func (m *Manager) RegisterCalculator(calc *CalculatorPlugin) error {
 		calc.client = client
 		calc.service = service
 	}
-	if c, ok := m.calculators[calc.Name]; ok {
+	if c, ok := calculators[calc.Name]; ok {
 		c.Close()
 	}
-	m.calculators[calc.Name] = calc
+	calculators[calc.Name] = calc
 	return nil
 }
 
-func (m *Manager) Close() {
-	for _, c := range m.calculators {
+func Close() {
+	for _, c := range calculators {
 		c.Close()
 	}
-	m.calculators = make(map[string]*CalculatorPlugin, 0)
+	calculators = make(map[string]*CalculatorPlugin, 0)
 }
 
 type CalculatorPlugin struct {
